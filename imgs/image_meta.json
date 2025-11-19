@@ -1,0 +1,47 @@
+[
+  {
+    "query": "A screenshot showing the main interface of ChatGPT Atlas browser with tabs, sidebar, and chat interface",
+    "image_info": {
+      "url": "https://cdn.ain.ua/en/articles/2025-10-22/2ZH29Zq02M1CO5tlTiUKO0BbZdc7Cvb80ZCs77bi.webp",
+      "img_format": "WEBP",
+      "mode": "RGB",
+      "file_size": 51132,
+      "width": 1200,
+      "height": 675,
+      "total_pixels": 810000,
+      "basic_score": 0.9242357963456567,
+      "file_name": "atlas_main_interface_0.webp"
+    },
+    "llm_score": null
+  },
+  {
+    "query": "A screenshot showing the main interface of ChatGPT Atlas browser with tabs, sidebar, and chat interface",
+    "image_info": {
+      "url": "https://substackcdn.com/image/fetch/$s_!G4t8!,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F138d0816-5a0c-4bf1-89ca-0e793e046241_900x648.jpeg",
+      "img_format": "JPEG",
+      "mode": "RGB",
+      "file_size": 90954,
+      "width": 900,
+      "height": 648,
+      "total_pixels": 583200,
+      "basic_score": 0.8768190672246224,
+      "file_name": "atlas_main_interface_7.jpeg"
+    },
+    "llm_score": null
+  },
+  {
+    "query": "A screenshot showing the main interface of ChatGPT Atlas browser with tabs, sidebar, and chat interface",
+    "image_info": {
+      "url": "https://trewknowledge.com/wp-content/uploads/2025/10/AI-This-Week_ChatGPT-Atlas.jpg?w=1024",
+      "img_format": "JPEG",
+      "mode": "RGB",
+      "file_size": 53628,
+      "width": 1024,
+      "height": 475,
+      "total_pixels": 486400,
+      "basic_score": 0.8182850833832136,
+      "file_name": "atlas_main_interface_9.jpg"
+    },
+    "llm_score": null
+  }
+]
