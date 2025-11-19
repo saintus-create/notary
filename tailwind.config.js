@@ -5,8 +5,7 @@ export default {
     './pages/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
-    './src/**/*.{html,js,svelte,ts}',
-    "./node_modules/@shadcn/svelte/dist/**/*.js"
+    './src/**/*.{html,js,svelte,ts}'
   ],
   theme: {
     container: {
