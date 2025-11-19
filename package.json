@@ -1,10 +1,14 @@
 {
   "name": "chatgpt-atlas-shadcn",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "private": true,
+  "description": "ChatGPT Atlas - A modern, accessible SvelteKit website with shadcn/ui components",
+  "keywords": ["svelte", "sveltekit", "shadcn", "typescript", "tailwindcss", "chatgpt", "atlas"],
+  "author": "MiniMax Agent",
+  "license": "MIT",
   "scripts": {
-    "build": "vite build",
     "dev": "vite dev",
+    "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -12,11 +16,13 @@
     "format": "prettier --write .",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "deploy": "npm run build && npm run preview",
+    "prepare": "svelte-kit sync"
   },
   "devDependencies": {
     "@shadcn/svelte": "^0.10.4",
-    "@sveltejs/adapter-auto": "^3.0.0",
+    "@sveltejs/adapter-vercel": "^4.0.0",
     "@sveltejs/adapter-static": "^3.0.1",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/vite-plugin-svelte": "^3.0.0",
@@ -43,5 +49,8 @@
     "lucide-svelte": "^0.294.0",
     "tailwind-merge": "^2.0.0"
   },
-  "type": "module"
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }

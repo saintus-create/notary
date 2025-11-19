@@ -1,0 +1,220 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run type checking
+        run: npm run check
+        
+      - name: Run linting
+        run: npm run lint
+        
+      - name: Run tests
+        run: npm run test
+        
+      - name: Build project
+        run: npm run build
+
+  deploy-preview:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build project
+        run: npm run build
+        
+      - name: Deploy to Vercel Preview
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.ORG_ID}}
+          vercel-project-id: ${{ secrets.PROJECT_ID}}
+          working-directory: ./
+          vercel-args: '--prebuilt'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          
+      - name: Comment preview URL
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Read the Vercel output file to get the preview URL
+            const vercelOutputPath = path.join(process.env.GITHUB_WORKSPACE || '.', '.vercel', 'output.json');
+            let previewUrl = 'https://preview-url-not-found.vercel.app';
+            
+            try {
+              if (fs.existsSync(vercelOutputPath)) {
+                const output = JSON.parse(fs.readFileSync(vercelOutputPath, 'utf8'));
+                const deployment = output.deployment || output;
+                if (deployment && deployment.url) {
+                  previewUrl = `https://${deployment.url}`;
+                }
+              }
+            } catch (error) {
+              console.log('Could not read Vercel output file:', error.message);
+            }
+            
+            const comment = `🚀 **Preview deployment ready!**\n\n🔗 **Preview URL**: ${previewUrl}\n\n📝 **Changes in this PR**:\n${context.payload.pull_request.title}\n\n💡 This preview will be updated when the PR is merged to main.`
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  deploy-production:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build project
+        run: npm run build
+        
+      - name: Deploy to Vercel Production
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.ORG_ID}}
+          vercel-project-id: ${{ secrets.PROJECT_ID}}
+          working-directory: ./
+          vercel-args: '--prod --prebuilt'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          
+      - name: Notify deployment success
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const releaseBody = `## 🎉 New Release Deployed!
+            
+            **Production URL**: https://your-project-name.vercel.app
+            
+            ### ✅ What's New
+            - Latest codebase deployed successfully
+            - All tests passed
+            - Ready for production use
+            
+            ### 📊 Deployment Info
+            - **Commit**: ${context.sha.substring(0, 7)}
+            - **Branch**: ${context.ref.replace('refs/heads/', '')}
+            - **Deployed by**: ${context.actor}
+            - **Time**: ${new Date().toISOString()}
+            
+            ---
+            
+            <img src="https://img.shields.io/badge/Status-Production%20Ready-brightgreen" alt="Status">`
+            
+            github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: `v${Date.now()}`,
+              name: `Production Release - ${new Date().toISOString().split('T')[0]}`,
+              body: releaseBody,
+              draft: false,
+              prerelease: false
+            });
+
+      - name: Notify deployment failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const failureBody = `## ❌ Deployment Failed
+            
+            ### 🚨 Issue Details
+            - **Commit**: ${context.sha.substring(0, 7)}
+            - **Branch**: ${context.ref.replace('refs/heads/', '')}
+            - **Failed by**: ${context.actor}
+            - **Time**: ${new Date().toISOString()}
+            
+            ### 🔧 Next Steps
+            1. Check the failed workflow logs
+            2. Fix any issues in the code
+            3. Push a new commit to trigger redeployment
+            
+            ---
+            
+            <img src="https://img.shields.io/badge/Status-Deployment%20Failed-red" alt="Status">`
+            
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Deployment Failed - ${new Date().toISOString().split('T')[0]}`,
+              body: failureBody,
+              labels: ['bug', 'deployment', 'urgent']
+            });
+
+  lighthouse:
+    needs: deploy-production
+    runs-on: ubuntu-latest
+    if: success()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          configPath: './lighthouserc.json'
+          uploadArtifacts: true
+          temporaryPublicStorage: true
