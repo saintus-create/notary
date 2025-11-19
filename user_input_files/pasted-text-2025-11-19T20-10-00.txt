@@ -1,0 +1,195 @@
+Below is a **complete, step‑by‑step checklist** you can copy‑paste into a markdown file (or a Notion page, GitHub Project board, etc.) and tick off as you build a **shadcn‑UI + Svelte** website.  
+It covers everything from the first `npm install` to the final deployment, with a special focus on the visual polish that makes a site feel *truly* “shadcn”.
+
+---
+
+## 📋 Shadcn‑UI + Svelte – “Perfectly Shadcn & Beautiful” Checklist
+
+| # | Category | Item | Why it matters | How to verify / command |
+|---|----------|------|----------------|--------------------------|
+| **1** | **Project bootstrap** | 1️⃣ Create a fresh SvelteKit app (or Svelte‑SSR) with `npm init svelte@next` | Guarantees a clean, modern Vite‑based setup | `npm run dev` → no errors |
+| | | 2️⃣ Install Tailwind CSS & shadcn‑ui plugin | shadcn UI is built on Tailwind utilities | `npm i -D tailwindcss@latest postcss autoprefixer` <br> `npx tailwindcss init -p` |
+| | | 3️⃣ Add `@shadcn/svelte` (or the community fork) | Pulls in the component library | `npm i @shadcn/svelte` |
+| | | 4️⃣ Configure `tailwind.config.cjs` for shadcn (content paths, dark mode, etc.) | Ensures all classes are generated & purge works | ```js  // tailwind.config.cjs
+module.exports = {
+  darkMode: ["class"], // or "media"
+  content: [
+    "./src/**/*.{html,js,svelte,ts}",
+    "./node_modules/@shadcn/svelte/dist/**/*.js"
+  ],
+  theme: { extend: {} },
+  plugins: [require("@shadcn/svelte/plugin")],
+}
+``` |
+| **2** | **Design System Foundations** | 5️⃣ Define **brand tokens** (primary, secondary, accent, danger, success, warning) in `theme.extend.colors` | All components will inherit the same palette | Check generated CSS (`npm run build && grep primary src/**/*.css`) |
+| | | 6️⃣ Set **typography scale** (`fontFamily`, `fontSize`, `lineHeight`) | Guarantees visual harmony across headings, body text, code snippets | Look at the Storybook/Docs page – all text should follow the scale |
+| | | 7️⃣ Configure **spacing system** (`spacing`, `borderRadius`, `boxShadow`) | Keeps paddings, margins, and radii consistent | Verify with the UI‑kit “Spacing demo” component |
+| | | 8️⃣ Enable **dark‑mode** (class‑based) and create **color mode** switch component | Modern UI expectations; shadcn ships dark‑mode ready | Click the toggle → all components change theme correctly |
+| **3** | **Component Usage** | 9️⃣ Install only the components you actually need (e.g., `button`, `card`, `dialog`, `dropdown-menu`, `toast`, `tabs`) | Reduces bundle size & avoids unused CSS | `npm ls @shadcn/svelte` shows only used packages |
+| | | 10️⃣ Use **shadcn “slots”** correctly (e.g., `<Button asChild>` for custom inner elements) | Keeps markup semantic and accessible | Lint for `<asChild>` usage with `eslint-plugin-svelte` |
+| | | 11️⃣ Follow **component naming conventions** (`PascalCase` for Svelte components) | Improves readability & IDE auto‑completion | Search for kebab‑case components → none should exist |
+| | | 12️⃣ **Customize variants** via Tailwind `variant` utility or `class:` bindings (e.g., `variant="outline"` on `<Button>`) | Gives you the exact visual style you want without overriding CSS | Visual diff between default and custom variant should match design spec |
+| **4** | **Layout & Responsiveness** | 13️⃣ Build a **responsive grid** using Tailwind’s `grid`/`flex` utilities + shadcn `Container` component | Layout should gracefully collapse on mobile | Resize browser → breakpoints (sm, md, lg, xl) behave as expected |
+| | | 14️⃣ Use **`aspect-ratio`** utilities for images, video, and cards | Prevents layout shift (CLS) and keeps UI tidy | Chrome DevTools → Layout → check aspect-ratio boxes |
+| | | 15️⃣ Add **CSS‑only animation utilities** (`transition`, `duration-150`, `ease-out`) for hover/focus states | Makes UI feel alive without JS bloat | Hover over buttons → smooth transition |
+| **5** | **Accessibility (A11y)** | 16️⃣ All interactive shadcn components already include proper ARIA attributes – **double‑check**: <br>• `Button` → `type="button"` <br>• `Dialog` → `role="dialog"`, `aria-modal="true"` <br>• `DropdownMenu` → `aria-haspopup="menu"` | Accessibility is non‑negotiable for a “professional” site | Run `npm run lint:accessibility` (see later) |
+| | | 17️⃣ Add **focus-visible** styles (`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`) to every interactive element | Keyboard users need visible focus states | Tab through the page → every focus ring appears |
+| | | 18️⃣ Provide **meaningful alt text** for all images (including decorative ones using `alt=""`) | Improves screen‑reader experience & SEO | Search for `<img` without `alt=` → none |
+| | | 19️⃣ Use **semantic HTML** (`<header>`, `<nav>`, `<main>`, `<section>`, `<footer>`) | Boosts accessibility and SEO | Run `eslint-plugin-svelte` rule `svelte/no-useless-div` |
+| **6** | **Performance & Build Optimisation** | 20️⃣ Enable **Tailwind JIT** (default in Vite) – ensures only used classes are emitted | Keeps CSS bundle tiny | Build → `dist/assets/*.css` size < 30 KB (gzipped) |
+| | | 21️⃣ **Purge unused shadcn components** – import only what you need | Further reduces bundle size | Run `npm run build && grep -R "@shadcn/svelte" dist/**/*.js` – only listed components appear |
+| | | 22️⃣ **Lazy‑load heavy components** (e.g., dialogs, modals, charts) with `import()` and `<svelte:component this={Component} />` | Improves first‑paint time | Network tab → component JS only loads on demand |
+| | | 23️⃣ Optimize images with **`@sveltejs/adapter-static`** + **`vite-imagetools`** or an external CDN | Reduces LCP | Image sizes < 200 KB, `loading="lazy"` present |
+| | | 24️⃣ Use **`preload`/`prefetch`** for critical fonts & scripts | Improves Time‑to‑Interactive | Chrome DevTools → `preload` links present |
+| **7** | **SEO & Meta** | 25️⃣ Set up `<svelte:head>` with: <br>• `title`, `meta description` <br>• Open Graph tags <br>• `rel="canonical"` <br>• `viewport` <br>• `theme-color` (matches dark/light mode) | Search engines & social sharing need these | View source → all tags present |
+| | | 26️⃣ Generate **structured data** (`application/ld+json`) for the main page (Organization, BreadcrumbList) | Enhances rich snippets | Use Google Rich Results Test |
+| | | 27️⃣ Ensure **fast LCP** (≤ 2.5 s) – measure with Lighthouse after every major change | Core Web Vitals matter for ranking & UX | Lighthouse > 90 on Performance |
+| **8** | **Testing & Quality Gates** | 28️⃣ Add **ESLint** with `eslint-plugin-svelte` and **Prettier** (including `prettier-plugin-svelte`) | Keeps code style consistent | `npm run lint && npm run format:check` |
+| | | 29️⃣ Run **`svelte-check`** (type‑checking) on every PR | Catches type errors early | `npm run check` |
+| | | 30️⃣ Add **unit tests** (Vitest) for critical UI logic (e.g., toast queue, dialog open/close) | Guarantees behaviour doesn’t regress | `npm test` passes 100 % |
+| | | 31️⃣ Use **Playwright** or **Cypress** for **end‑to‑end** visual regression tests on key pages | Ensures layout/visuals stay consistent | `npm run test:e2e` → snapshots compare |
+| | | 32️⃣ Configure **GitHub Actions** CI pipeline: lint → type‑check → test → build → deploy | Automates gatekeeping | Pull request shows green ✅ |
+| **9** | **Documentation & Hand‑off** | 33️⃣ Create a **Component Style Guide** (Storybook or MDX) that showcases every shadcn component with variants | New devs can copy‑paste patterns | Storybook runs at `npm run storybook` |
+| | | 34️⃣ Write **“Design Tokens”** docs (colors, spacing, typography) in the repo’s `README` or a separate `docs/` folder | Designers & devs stay aligned | Tokens table is up‑to‑date |
+| | | 35️⃣ Add a **README** with setup, build, and deployment instructions (including environment variables) | Reduces onboarding friction | New contributor can `git clone` and `npm i && npm run dev` without extra steps |
+| **10** | **Deployment & Monitoring** | 36️⃣ Choose an **adapter** (`@sveltejs/adapter-vercel`, `adapter-netlify`, `adapter-static`) that matches your host | Guarantees correct SSR/static build | Build logs show `adapter‑xxxx` used |
+| | | 37️⃣ Enable **gzip/Brotli compression** on the CDN (most hosts do automatically) | Saves bandwidth, improves speed | Network → `content‑encoding: br` |
+| | | 38️⃣ Set up **error tracking** (Sentry, LogRocket) and **performance monitoring** (Web Vitals) | Detects runtime bugs early | Console shows Sentry init, Web Vitals reported |
+| | | 39️⃣ Add **robots.txt** & **sitemap.xml** (SvelteKit can generate via `@sveltejs/adapter-static` or a plugin) | Improves crawlability | `https://example.com/robots.txt` returns proper directives |
+| | | 40️⃣ Deploy to a **staging** environment first, run a final Lighthouse audit, then promote to production | Prevents accidental regressions | Staging Lighthouse > 90, then push to prod |
+
+---
+
+## 📦 Quick‑Start Boilerplate (Copy‑Paste)
+
+```bash
+# 1️⃣ Scaffold SvelteKit
+npm create svelte@latest my-shadcn-site
+cd my-shadcn-site
+npm i
+
+# 2️⃣ Install Tailwind + shadcn
+npm i -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+npm i @shadcn/svelte
+
+# 3️⃣ Tailwind config (tailwind.config.cjs)
+cat > tailwind.config.cjs <<'EOF'
+module.exports = {
+  darkMode: ["class"],
+  content: [
+    "./src/**/*.{html,js,svelte,ts}",
+    "./node_modules/@shadcn/svelte/dist/**/*.js",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: "hsl(var(--primary))",
+        secondary: "hsl(var(--secondary))",
+        // add your brand palette here
+      },
+    },
+  },
+  plugins: [require("@shadcn/svelte/plugin")],
+}
+EOF
+
+# 4️⃣ Add Tailwind directives (src/app.css)
+cat > src/app.css <<'EOF'
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* shadcn base styles */
+@layer base {
+  :root {
+    --primary: 220 90% 55%;   /* example hue */
+    --secondary: 340 80% 45%;
+  }
+}
+EOF
+
+# 5️⃣ Import CSS in src/routes/+layout.svelte
+cat >> src/routes/+layout.svelte <<'EOF'
+
+<script>
+  import "../app.css";
+</script>
+
+<slot />
+EOF
+
+# 6️⃣ Install dev tools (ESLint, Prettier, Vitest, Playwright)
+npm i -D eslint prettier eslint-plugin-svelte prettier-plugin-svelte \
+  @typescript-eslint/parser @typescript-eslint/eslint-plugin \
+  vitest @playwright/test
+
+# 7️⃣ Add a simple component to test
+cat > src/lib/ui/Button.svelte <<'EOF'
+<script lang="ts">
+  import { Button } from "@shadcn/svelte";
+  export let variant: "default" | "outline" = "default";
+</script>
+
+<Button variant={variant}>
+  <slot />
+</Button>
+EOF
+
+# 8️⃣ Run dev server
+npm run dev
+```
+
+Now you have a **fully wired shadcn + Svelte** environment ready for the checklist above.
+
+---
+
+## 🎨 Design‑First Tips for “Shadcn‑Beautiful”
+
+| Tip | How to apply in Svelte |
+|-----|------------------------|
+| **Consistent rounded corners** | Define `--radius: 0.5rem;` in `:root` and use `rounded-[var(--radius)]` everywhere. |
+| **Elevated cards** | Use `shadow-sm` for subtle depth; add `hover:shadow-md transition-shadow` to make cards feel tactile. |
+| **Primary actions stand out** | `bg-primary text-primary-foreground hover:bg-primary/90` (shadcn default). Use `Button variant="default"` for CTAs, `outline` for secondary. |
+| **Micro‑interactions** | Add `data-state="open"` attribute to dialog; style with `animate-in fade-in` (Tailwind `@keyframes`). |
+| **Iconography** | Use `lucide-svelte` (the official icon set for shadcn) → `<Icon name="arrow-right" class="w-4 h-4"/>`. Keep icons at `1rem` (16 px) for consistency. |
+| **Typography hierarchy** | `h1` → `text-4xl font-bold`, `h2` → `text-3xl font-semibold`, `p` → `text-base leading-7`. Use Tailwind `prose` class for long-form content. |
+| **Color‑mode aware images** | Provide two versions (`logo-light.svg`, `logo-dark.svg`) and swap with `class="dark:hidden"` / `dark:block`. |
+| **Spacing rhythm** | Stick to `8px` grid: use `gap-2` (8 px), `p-4` (16 px), `m-6` (24 px) etc. Avoid arbitrary pixel values. |
+
+---
+
+## 📚 Handy One‑Liner Commands
+
+| Goal | Command |
+|------|---------|
+| Lint (ESLint) | `npm run lint` |
+| Format (Prettier) | `npm run format` |
+| Type‑check (svelte‑check) | `npm run check` |
+| Unit tests (Vitest) | `npm test` |
+| E2E visual regression (Playwright) | `npm run test:e2e` |
+| Build for production | `npm run build` |
+| Preview built site locally | `npm run preview` |
+| Storybook (Component docs) | `npm run storybook` |
+| Generate sitemap (if using `adapter-static`) | `npm run generate:sitemap` |
+| Deploy (example with Vercel) | `vercel --prod` |
+
+*(Add the corresponding scripts to your `package.json` – e.g., `"lint": "eslint . --ext .js,.svelte", "format": "prettier --check .", "check": "svelte-check", "test": "vitest run", "test:e2e": "playwright test", "storybook": "storybook dev -p 6006"`)*
+
+---
+
+## ✅ How to Use This Checklist
+
+1. **Create a new branch** (`feature/shadcn‑setup`) and copy the table into a `CHECKLIST.md` file at the repo root.  
+2. **Run the quick‑start script** above.  
+3. **Tick each row** as you complete it (GitHub Projects or VS Code markdown preview works great).  
+4. **Commit often** (`git add -A && git commit -m "✅ shadcn: dark‑mode switch"`).  
+5. **Open a PR** – the CI pipeline you set up (lint → type‑check → test → build) will automatically enforce the checklist items flagged as “must‑have”.
+
+When the PR is green and the checklist is fully ticked, you can be confident the site is **fully shadcn‑compliant, accessible, performant, and visually cohesive**.
+
+---
+
+### 🎉 You’re ready!
+
+Follow the table, keep the design tokens in sync, and your Svelte‑shadcn site will not only *look* beautiful but also *behave* beautifully across devices, users, and browsers. Happy coding! 🚀
