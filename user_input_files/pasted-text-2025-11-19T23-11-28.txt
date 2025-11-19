@@ -1,0 +1,229 @@
+TL;DR
+
+Your CI build is blowing up because
+Header.svelte
+
+does not exist in the exact path Vite is looking for it.
+On a case‑insensitive file system (macOS, Windows) a typo like
+header.svelte
+
+or a different folder name may have slipped through, but the Linux runner that builds your app is case‑sensitive and refuses to load the component.
+
+Below is a practical checklist to get you back on track:
+
+Step	What to do	Why it matters	Typical command / action
+1	Verify the file’s real name	Linux is case‑sensitive.
+Header.svelte
+
+≠
+header.svelte
+
+.	
+ls -la src/lib/components/
+
+2	Check the import path	SvelteKit uses
+$lib
+
+alias. The import should be
+import Header from '$lib/components/Header.svelte';
+
+.	Open
+src/routes/+page.svelte
+
+and confirm the line.
+3	Confirm the file is tracked by Git	An uncommitted or ignored file won’t be present on CI.	
+git ls-files src/lib/components/Header.svelte
+
+4	Clean and reinstall	Cached build artifacts can mask file‑system issues.	
+rm -rf node_modules/.vite && npm i
+
+5	Run a local dev build	Re‑produce the error locally to get a prettier stack‑trace.	
+npm run dev
+
+or
+npm run build
+
+6	Check case‑sensitive paths in
+.svelte-kit
+
+The
+.svelte-kit/dev
+
+cache may hold a wrong case.	
+rm -rf .svelte-kit
+
+7	Use
+svelte-check
+
+to catch import errors	It statically analyses imports for you.	
+npx svelte-check --tsconfig src/tsconfig.json
+
+8	Commit & push the fix	Once you have the correct file & import, push and re‑run CI.	
+git commit -am "Fix Header import casing"
+
+Why this happens
+
+Vite’s error message:
+
+Could not load /usr/local/build/src/lib/components/Header.svelte (imported by src/routes/+page.svelte): ENOENT: no such file or directory
+
+means that when Vite walked the import tree, it resolved the absolute path to
+.../src/lib/components/Header.svelte
+
+but the file was not there. The most common culprit on CI is a case mismatch:
+
+# On your local machine (case‑insensitive)
+src/lib/components/Header.svelte   ← exists
+src/lib/components/header.svelte   ← maybe the actual file
+
+# On CI (Linux, case‑sensitive)
+src/lib/components/Header.svelte   ← does NOT exist
+
+Because Windows/macOS allow both names to coexist, you never noticed.
+The CI runner (Docker, GitHub Actions, etc.) sees only one of them, so it throws
+ENOENT
+
+.
+
+Quick fix – the “case‑cure” recipe
+
+Locate the actual file on your machine.
+
+ls -l src/lib/components/
+
+Rename it to match the import.
+
+mv src/lib/components/header.svelte src/lib/components/Header.svelte
+
+Update any imports that refer to the old name (if you changed the name).
+
+<!-- src/routes/+page.svelte -->
+<script>
+  import Header from '$lib/components/Header.svelte';
+</script>
+
+Commit and push.
+
+git add src/lib/components/Header.svelte
+git commit -m "Rename Header component to correct case"
+git push
+
+Re‑run CI and it should pass.
+
+If the file is named
+Header.svelte
+
+
+Sometimes the file does exist but is being excluded by something else:
+
+Possible cause	How to check	Fix
+File is in
+.gitignore
+
+git check-ignore -v src/lib/components/Header.svelte
+
+Remove the ignore rule or move the file out of ignored directories.
+Wrong directory	
+find src -name Header.svelte
+
+Move the file to
+src/lib/components/
+
+.
+Missing dependency	Look for a
+svelte-loader
+
+or Vite plugin that might skip
+.svelte
+
+files	Ensure you’re using the standard
+@sveltejs/adapter-auto
+
+and
+@sveltejs/kit
+
+.
+Case‑sensitive alias	Check your
+vite.config.js
+
+for
+alias: { '$lib': '/usr/local/build/src/lib' }
+
+Remove or adjust the alias, or use the
+$lib
+
+alias that Vite automatically provides.
+Additional debugging tips
+
+Add a console log in your
+src/routes/+page.svelte
+
+:
+
+<script>
+  import Header from '$lib/components/Header.svelte';
+  console.log('Header loaded', Header);
+</script>
+
+If you run
+npm run dev
+
+locally, you’ll see the component in the console, proving the import resolves.
+
+Run a full clean build locally to mimic CI:
+
+rm -rf node_modules .svelte-kit
+npm ci
+npm run build
+
+Check Vite’s resolved paths (in
+vite.config.js
+
+add a plugin):
+
+import { defineConfig } from 'vite';
+import { sveltekit } from '@sveltejs/kit/vite';
+import fs from 'fs';
+
+export default defineConfig({
+  plugins: [
+    sveltekit(),
+    {
+      name: 'log-headers',
+      resolveId(source, importer) {
+        if (source.endsWith('Header.svelte')) {
+          console.log(`Resolving ${source} from ${importer}`);
+        }
+        return null;
+      }
+    }
+  ]
+});
+
+Inspect the CI job logs for any earlier messages that might hint at file deletion or mis‑configuration.
+For example, a
+git diff
+
+in the CI job can show that the file was omitted.
+
+Summary
+
+Root cause:
+Header.svelte
+
+missing in the CI environment (most often a case‑sensitivity mismatch).
+Fix: Ensure the file exists with the exact name
+Header.svelte
+
+in
+src/lib/components/
+
+and that your import uses
+$lib/components/Header.svelte
+
+.
+Re‑commit and push; CI should rebuild successfully.
+If after these steps the build still fails, drop a short snippet of the import line and the folder listing from
+src/lib/components/
+
+—I’ll gladly take another look!
