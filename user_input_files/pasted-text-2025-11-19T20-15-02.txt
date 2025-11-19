@@ -1,0 +1,335 @@
+## 🎨 Shadcn + Svelte – **Typography & Visual‑Spacing Master Checklist**  
+*(Everything you asked for – line‑height, tracking, kerning, shadows, padding, pixel‑perfect sizing, etc. – with concrete Tailwind/Svelte examples and verification steps.)*
+
+---
+
+### 1️⃣ WHY THIS SECTION MATTERS  
+
+| Goal | What Happens If It’s Missing |
+|------|------------------------------|
+| **Readability** – correct line‑height, line‑length, and tracking | Text looks cramped or “spacy”, users lose focus, accessibility scores drop. |
+| **Brand Consistency** – same font‑size, weight, and colour everywhere | The product feels un‑polished; designers spend hours fighting visual drift. |
+| **Performance** – proper font‑loading, use of `rem`/`em` | Large‑size fonts block rendering, cause CLS, hurt Core‑Web‑Vitals. |
+| **Scalability** – responsive typographic scale, spacing tokens | Adding a new page never requires re‑tweaking the whole CSS. |
+| **Accessibility** – enough contrast, sufficient line‑spacing, focus‑visible shadows | WCAG 2.1 AA/AAA compliance, keyboard‑only users can navigate. |
+| **Design‑System Hygiene** – single source of truth for spacing, shadows, borders | Teams can copy‑paste components without breaking the visual language. |
+
+---
+
+## 📚 2️⃣ TYPOGRAPHY – EVERYTHING YOU NEED TO SPECIFY
+
+| # | Item | Recommended Value / Token | Tailwind Utility (or CSS var) | How to Verify |
+|---|------|---------------------------|------------------------------|----------------|
+| **2.1** | **Base Font Family** | `font-sans: "Inter var", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif` | `font-sans` (add to `theme.fontFamily`) | Inspect `<html>` → computed `font-family`. |
+| **2.2** | **Fallback Font Stack** | Same as above, **no** `@import` of remote fonts in CSS | Set `font-family` in `tailwind.config.cjs` | Font‑swap works when primary font is blocked. |
+| **2.3** | **Variable Font** (optional) | `Inter var` – enables weight axis 100‑900 | `font-inter` custom class | Weight changes smoothly (`font-weight: 400` → `700`). |
+| **2.4** | **Font‑Display** | `swap` (or `optional` for critical UI) | In `@font-face` rule (`font-display: swap;`) | Network tab shows `font-display: swap`. |
+| **2.5** | **Root Font Size** | `16px` (default) – keep **rem** as the unit of measure | `html { font-size: 100%; }` | Browser → computed `font-size` = `16px`. |
+| **2.6** | **Typographic Scale** *(Modular‑Scale)* | **Scale ratio 1.250** (minor third) → `text-sm (0.875rem)`, `text-base (1rem)`, `text-lg (1.125rem)`, `text-xl (1.25rem)`, `text-2xl (1.5rem)`, `text-3xl (1.875rem)`, `text-4xl (2.25rem)`, `text-5xl (3rem)` | Tailwind default works; you can extend `fontSize` for exact values. | Visual diff – each step ≈ 1.25× previous. |
+| **2.7** | **Responsive Scaling** | Use `sm:text-base`, `md:text-lg`, `lg:text-xl` etc. | `sm:text-base md:text-lg lg:text-2xl` | Resize viewport → size steps at breakpoints. |
+| **2.8** | **Line‑Height (Leading)** | **1.5** for body, **1.25** for headings (tight) | `leading-relaxed` (`1.625`), `leading-snug` (`1.375`), custom `leading-[1.5]` | Chrome DevTools → computed `line-height`. |
+| **2.9** | **Maximum Line Length** | **45–75 characters** (ideal ≈ 66) | Use `max-w-prose` (≈ 65 ch) or custom `max-w-[65ch]` on containers | Count characters in a line (copy‑paste into an editor). |
+| **2.10** | **Letter‑Spacing (Tracking)** | `0` for body, `-0.01em` for large headings, `0.025em` for uppercase UI text | `tracking-normal`, `tracking-tight`, `tracking-wider` or `tracking-[0.025em]` | Text looks balanced; no “tight‑overlap”. |
+| **2.11** | **Word‑Spacing** (rare) | Default is fine; only tweak for all‑caps UI | `word-spacing-[0.1rem]` if needed | Visual test with long uppercase words. |
+| **2.12** | **Kerning** (font‑level) | Enable **font‑kerning** – most variable fonts have it built‑in | `font-kerning` (custom utility) → `font-kerning: normal;` | Inspect a pair like “AV” – gap should be subtle. |
+| **2.13** | **Text‑Transform** | `uppercase` only on buttons/labels, not body | `uppercase`, `capitalize`, `lowercase` | No accidental all‑caps paragraphs. |
+| **2.14** | **Font‑Weight Tokens** | `font-weight: 400` (regular), `500` (medium), `600` (semibold), `700` (bold) | `font-normal`, `font-medium`, `font-semibold`, `font-bold` | CSS computed weight matches token. |
+| **2.15** | **Color Tokens** (foreground) | `text-foreground` (`hsl(var(--foreground))`), `text-muted` (`hsl(var(--muted-foreground))`) | `text-foreground`, `text-muted-foreground` (custom Tailwind colors) | Contrast ≥ 4.5:1 (WCAG AA) – use Lighthouse. |
+| **2.16** | **Text‑Decoration** | `underline`, `no-underline`, `line-through` only where needed | `underline`, `no-underline` | No stray underlines on body. |
+| **2.17** | **Text‑Shadow** (optional, subtle) | `0 1px 2px hsl(var(--shadow)/0.12)` for headings | `text-shadow-sm` (custom plugin) | Hover → heading shadow appears smoothly. |
+| **2.18** | **Subpixel Rendering** | `-webkit-font-smoothing: antialiased;` for macOS, `text-rendering: optimizeLegibility;` | Add global CSS: `html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }` | Text looks crisp on Retina/macOS. |
+| **2.19** | **Hyphenation** (long words) | `hyphens: auto;` for body paragraphs | `hyphens-auto` (custom utility) | Long words break correctly on narrow screens. |
+| **2.20** | **Accessibility – Contrast** | Minimum 4.5:1 (AA) for body, 3:1 for large text | Use Tailwind `text-primary` vs `bg-primary` that meets contrast | Run Lighthouse → “Color contrast” > 90. |
+| **2.21** | **Accessibility – Focus Ring on Text Elements** | Add `focus-visible:ring-2 focus-visible:ring-primary` to any interactive text | `focus-visible:ring-2 focus-visible:ring-primary` | Tab to link/button → visible ring appears. |
+
+---
+
+## 🧩 3️⃣ SPACING & SIZING – PADDING, MARGIN, WIDTH, HEIGHT, SHADOWS, BORDER‑RADIUS
+
+| # | Item | Token / Value | Tailwind Utility | Svelte‑Component Example | Verify |
+|---|------|---------------|------------------|--------------------------|--------|
+| **3.1** | **Base spacing unit** | `4px` (0.25rem) – *the “grid”* | `space-x-1` = 0.25rem, `space-x-2` = 0.5rem, … | `class="p-4"` = 1 rem | All margins/paddings are multiples of 4 px. |
+| **3.2** | **Container padding** | `px-4` on mobile, `px-8` on md+, `max-w-7xl` | `container mx-auto px-4 md:px-8` | `<div class="container mx-auto px-4 md:px-8">` | No horizontal scroll at any breakpoint. |
+| **3.3** | **Component internal padding** | **Buttons**: `px-4 py-2` (16 px × 8 px) <br> **Cards**: `p-6` (24 px) | `px-4 py-2`, `p-6` | `<Button class="px-4 py-2">` | Clickable area meets 44 × 44 dp minimum. |
+| **3.4** | **Vertical rhythm** | `gap-4` (1rem) between blocks | `gap-4` on flex/grid containers | `<section class="flex flex-col gap-4">` | Consistent spacing visually. |
+| **3.5** | **Line‑width / Border thickness** | `1px` for dividers, `2px` for emphasis | `border`, `border-2` | `<hr class="border-t border-muted" />` | Chrome devtools → border width. |
+| **3.6** | **Border‑radius** | **Rounded‑md** = `0.375rem` (6 px) for cards, **rounded‑lg** = `0.5rem` (8 px) for inputs | `rounded-md`, `rounded-lg` | `<Card class="rounded-md">` | No sharp corners unless intentional. |
+| **3.7** | **Box‑shadow** | **Subtle**: `0 1px 3px hsl(var(--shadow)/0.12)` <br> **Elevated**: `0 4px 6px -1px hsl(var(--shadow)/0.1), 0 2px 4px -2px hsl(var(--shadow)/0.1)` | Custom utilities: `shadow-sm`, `shadow-md` (extend Tailwind config) | `<Card class="shadow-sm">` | Hover → elevation change is perceptible. |
+| **3.8** | **Focus‑visible shadow** (accessibility) | `outline-none ring-2 ring-offset-2 ring-primary` | `focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2` | `<Button class="focus-visible:ring-2 focus-visible:ring-primary">` | Tab navigation shows the ring. |
+| **3.9** | **Width & Height (UI controls)** | Buttons: `min-w-[64px]` <br> Icons: `w-4 h-4` (16 px) | `min-w-[64px]`, `w-4 h-4` | `<Button class="min-w-[64px]">` | Click target ≥ 44 dp (≈ 48 px). |
+| **3.10** | **Responsive width** | Full width on mobile, max‑width on desktop (`max-w-sm`, `max-w-md`) | `w-full md:max-w-sm` | `<input class="w-full md:max-w-sm" />` | Layout stays centered on larger screens. |
+| **3.11** | **Aspect‑ratio** (cards, videos) | `aspect-video` (16:9) or custom `aspect-[4/3]` | `aspect-video`, `aspect-square` | `<div class="aspect-video bg-muted">` | No layout shift when image loads. |
+| **3.12** | **Negative margins** (only for visual tricks) | Avoid unless absolutely needed; document the reason. | `-mt-2`, `-ml-4` | `<div class="-mt-2">` | Lint rule `no-negative-margin` can warn. |
+| **3.13** | **Overflow handling** | `overflow-hidden` on cards with radius, `overflow-x-auto` on tables | `overflow-hidden`, `overflow-x-auto` | `<Table class="overflow-x-auto">` | No horizontal scrollbar on body. |
+| **3.14** | **Z‑index scale** | Use **z‑10** for dropdowns, **z‑20** for modals, **z‑30** for toasts | `z-10`, `z-20`, `z-30` | `<Dialog class="z-20">` | Stacking order matches expectation. |
+
+---
+
+## 🛠️ 4️⃣ HOW TO TURN THESE TOKENS INTO RE‑USABLE SVELTE COMPONENTS
+
+Below are **minimal “design‑system” wrappers** you can drop into `src/lib/ui/`. They pull the Tailwind utilities from the checklist so you never have to write them again.
+
+```svelte
+<!-- src/lib/ui/Heading.svelte -->
+<script lang="ts">
+  export let level: 1 | 2 | 3 | 4 | 5 | 6 = 1;
+  export let className: string = "";
+</script>
+
+<svelte:component this={"h" + level}
+  class={`font-sans font-bold 
+          ${level === 1 ? "text-5xl leading-[1.2]" : ""}
+          ${level === 2 ? "text-4xl leading-[1.25]" : ""}
+          ${level === 3 ? "text-3xl leading-[1.3]" : ""}
+          ${level === 4 ? "text-2xl leading-[1.4]" : ""}
+          ${level === 5 ? "text-xl leading-[1.5]" : ""}
+          ${level === 6 ? "text-lg leading-[1.6]" : ""}
+          tracking-tight ${className}`}>
+  <slot />
+</svelte:component>
+```
+
+```svelte
+<!-- src/lib/ui/Paragraph.svelte -->
+<script lang="ts">
+  export let size: "sm" | "base" | "lg" = "base";
+  export let className: string = "";
+</script>
+
+<p class={`font-sans text-${size} leading-relaxed text-foreground ${className}`}>
+  <slot />
+</p>
+```
+
+```svelte
+<!-- src/lib/ui/Button.svelte -->
+<script lang="ts">
+  import { Button as ShadButton } from "@shadcn/svelte";
+  export let variant: "default" | "outline" | "ghost" = "default";
+  export let size: "sm" | "md" | "lg" = "md";
+  export let className: string = "";
+</script>
+
+<ShadButton
+  variant={variant}
+  class={`
+    ${size === "sm" ? "px-3 py-1.5 text-sm" : ""}
+    ${size === "md" ? "px-4 py-2 text-base" : ""}
+    ${size === "lg" ? "px-5 py-2.5 text-lg" : ""}
+    min-w-[64px] rounded-md
+    focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
+    ${className}
+  `}>
+  <slot />
+</ShadButton>
+```
+
+```svelte
+<!-- src/lib/ui/Card.svelte -->
+<script lang="ts">
+  export let className: string = "";
+</script>
+
+<div class={`bg-card text-foreground rounded-md shadow-sm p-6 ${className}`}>
+  <slot />
+</div>
+```
+
+*All of the above pull **exactly** the tokens from the checklist, guaranteeing consistency across the whole site.*
+
+---
+
+## 📏 5️⃣ QUICK‑REFERENCE CHEAT‑SHEET (Tailwind + CSS‑Vars)
+
+Add these to **`tailwind.config.cjs`** (or a dedicated `design-tokens.css` file) once, then use them everywhere.
+
+```js
+// tailwind.config.cjs
+module.exports = {
+  darkMode: ["class"],
+  content: [
+    "./src/**/*.{html,js,svelte,ts}",
+    "./node_modules/@shadcn/svelte/dist/**/*.js",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        foreground: "hsl(var(--foreground))",
+        muted: "hsl(var(--muted))",
+        primary: "hsl(var(--primary))",
+        "primary-foreground": "hsl(var(--primary-foreground))",
+        card: "hsl(var(--card))",
+        shadow: "hsl(var(--shadow))",
+      },
+      fontFamily: {
+        sans: [
+          '"Inter var"',
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          '"Helvetica Neue"',
+          "Helvetica",
+          "Arial",
+          "sans-serif",
+        ],
+      },
+      fontSize: {
+        // custom values if you want exact modular scale
+        sm: ["0.875rem", { lineHeight: "1.5" }],
+        base: ["1rem", { lineHeight: "1.5" }],
+        lg: ["1.125rem", { lineHeight: "1.55" }],
+        xl: ["1.25rem", { lineHeight: "1.6" }],
+        "2xl": ["1.5rem", { lineHeight: "1.65" }],
+        "3xl": ["1.875rem", { lineHeight: "1.7" }],
+        "4xl": ["2.25rem", { lineHeight: "1.75" }],
+        "5xl": ["3rem", { lineHeight: "1.8" }],
+      },
+      spacing: {
+        // every spacing is a multiple of 4px
+        0: "0px",
+        1: "0.25rem",   // 4px
+        2: "0.5rem",    // 8px
+        3: "0.75rem",   // 12px
+        4: "1rem",      // 16px
+        5: "1.25rem",   // 20px
+        6: "1.5rem",    // 24px
+        8: "2rem",      // 32px
+        10: "2.5rem",   // 40px
+        12: "3rem",     // 48px
+        // …add more if you need
+      },
+      borderRadius: {
+        none: "0px",
+        sm: "0.125rem", // 2px
+        md: "0.375rem", // 6px
+        lg: "0.5rem",   // 8px
+        xl: "0.75rem",  // 12px
+        full: "9999px",
+      },
+      boxShadow: {
+        sm: "0 1px 2px hsl(var(--shadow) / 0.12)",
+        md:
+          "0 4px 6px -1px hsl(var(--shadow) / 0.1), 0 2px 4px -2px hsl(var(--shadow) / 0.1)",
+        lg:
+          "0 10px 15px -3px hsl(var(--shadow) / 0.1), 0 4px 6px -4px hsl(var(--shadow) / 0.1)",
+      },
+    },
+  },
+  plugins: [
+    require("@shadcn/svelte/plugin"),
+    // optional: plugin for text‑shadow if you need it
+    function ({ addUtilities }) {
+      addUtilities({
+        ".text-shadow-sm":
+          "text-shadow: 0 1px 2px hsl(var(--shadow) / 0.12);",
+        ".text-shadow-md":
+          "text-shadow: 0 2px 4px hsl(var(--shadow) / 0.15);",
+      });
+    },
+  ],
+};
+```
+
+**CSS‑Vars (global)** – place in `src/app.css` (or a separate `tokens.css`).
+
+```css
+:root {
+  /* Primary brand */
+  --primary: 220 90% 55%;          /* HSL */
+  --primary-foreground: 0 0% 100%;
+
+  /* Foreground / text */
+  --foreground: 222 22% 5%;        /* near‑black */
+  --muted: 210 16% 93%;            /* light gray */
+  --muted-foreground: 215 16% 45%;
+
+  /* Card background */
+  --card: 0 0% 100%;               /* white (light) */
+  --card-foreground: var(--foreground);
+
+  /* Shadow hue (neutral) */
+  --shadow: 0 0% 0%;
+}
+
+/* Dark mode overrides */
+.dark {
+  --primary: 220 90% 60%;
+  --foreground: 210 15% 95%;
+  --muted: 210 16% 15%;
+  --muted-foreground: 210 15% 70%;
+  --card: 215 14% 10%;
+}
+```
+
+---
+
+## ✅ 6️⃣ VERIFICATION & AUTOMATION
+
+| Test | Tool | Command | What to Look For |
+|------|------|---------|------------------|
+| **Linter** | `eslint-plugin-svelte` + `eslint-plugin-tailwindcss` | `npm run lint` | No `!important` on typography, no stray `px-` values not in token list. |
+| **Style‑guide / Storybook** | Storybook (or `svelte-docs`) | `npm run storybook` | Every component shows a **Typography** tab with all heading levels, paragraph sizes, and spacing demos. |
+| **Design‑token diff** | `style-dictionary` (optional) | `npm run tokens:build` | Tokens file (`json`) matches `tailwind.config.cjs`. |
+| **Responsive visual regression** | Playwright + `expect(page).toHaveScreenshot()` | `npm run test:e2e` | Screenshots at `sm`, `md`, `lg` breakpoints look identical to the design spec. |
+| **WCAG contrast** | Lighthouse / axe-core | `npm run lint:a11y` | All text passes AA (≥ 4.5:1) and large text passes AAA (≥ 7:1). |
+| **CLS / LCP** | Chrome DevTools > Performance | Load page → CLS < 0.1, LCP < 2.5 s | No layout shift from fonts or images. |
+| **Font‑load audit** | `font-display: swap` check | Network tab → fonts show “swap” | No FOIT (flash of invisible text). |
+
+*Add a pre‑commit hook (e.g., `husky` + `lint-staged`) that runs `npm run lint && npm run check && npm run format:check` so no typo‑level drift ever gets merged.*
+
+---
+
+## 📦 7️⃣ QUICK “Copy‑Paste” Checklist (Markdown)
+
+```markdown
+# ✅ Shadcn + Svelte – Typography & Spacing Checklist
+
+## Typography
+- [ ] Base `font-sans` set to Inter var + system stack
+- [ ] `font-display: swap` in `@font-face`
+- [ ] Root font‑size = 16 px → use `rem` everywhere
+- [ ] Typographic scale (1.250) implemented via `text-*` utilities
+- [ ] Responsive `sm:text-base md:text-lg lg:text-2xl` applied to all headings
+- [ ] Body line‑height = 1.5 (`leading-relaxed`)
+- [ ] Max line length = `max-w-prose` (≈ 65 ch)
+- [ ] Letter‑spacing: `tracking-tight` on headings, `tracking-normal` on body
+- [ ] Kerning enabled (`font-kerning: normal`)
+- [ ] Text‑shadow utility present on headings (`text-shadow-sm`)
+- [ ] Contrast ≥ 4.5:1 for body, ≥ 3:1 for large text
+- [ ] Focus‑visible rings on all interactive text elements
+- [ ] Hyphens = `auto` for paragraphs
+
+## Spacing / Sizing
+- [ ] Base spacing unit = 4 px (`space-x-1`, `p-1`, etc.)
+- [ ] Container: `container mx-auto px-4 md:px-8`
+- [ ] Buttons: `px-4 py-2 min-w-[64px] rounded-md`
+- [ ] Cards: `p-6 rounded-md shadow-sm`
+- [ ] Vertical rhythm: `gap-4` between sections
+- [ ] Border radius tokens (`rounded-md`, `rounded-lg`) used consistently
+- [ ] Shadows: `shadow-sm` for cards, `shadow-md` for modals
+- [ ] Focus ring: `focus-visible:ring-2 focus-visible:ring-primary`
+- [ ] Width/Height: icons `w-4 h-4`, inputs `w-full md:max-w-sm`
+- [ ] Aspect‑ratio: `aspect-video` for media embeds
+- [ ] Z‑index scale (`z-10`, `z-20`, `z-30`) documented
+
+## Verification
+- [ ] `npm run lint` – no stray values
+- [ ] `npm run check` – type‑check passes
+- [ ] Lighthouse > 90 (Performance, Accessibility, SEO)
+- [ ] Storybook shows every typographic token
+- [ ] Playwright visual diff passes on all breakpoints
+```
+
+Copy this into your repo’s `CHECKLIST.md` and tick each line as you go.
+
+---
+
+## 🚀 TL;DR – What to Do First
+
+1. **Add the design tokens** (colors, fonts, spacing, shadows) to `tailwind.config.cjs` **once**.  
+2. **Create tiny wrapper components** (`Heading.svelte`, `Paragraph.svelte`, `Button.svelte`, `Card.svelte`) that use those tokens.  
+3. **Replace any raw `px`/`pt` values** in the codebase with the Tailwind utilities that reference the token list.  
+4. **Run the verification table** on every PR (lint → type‑check → visual regression).  
+5. **Enjoy a pixel‑perfect, accessible, responsive UI** that feels 100 % “shadcn”.
+
+Now you have a **full‑proof, nothing‑left‑out** guide for typography, sizing, line‑height, tracking, kerning, shadows, padding, pixel‑perfect dimensions, and every visual‑spacing nuance required to make a Shadcn‑styled Svelte site *both beautiful and production‑ready*. 🎉 Happy coding!
