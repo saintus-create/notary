@@ -1,5 +1,5 @@
 <script>
-	export let isVisible = true;
+	export const isVisible = true; // For external reference
 	export let title = "Ask ChatGPT";
 	export let messages = [
 		{

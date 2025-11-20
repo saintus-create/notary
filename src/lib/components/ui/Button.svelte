@@ -15,9 +15,7 @@
 		md: 'h-12 px-4 py-2 text-base rounded-md', 
 		lg: 'h-14 px-5 py-2.5 text-lg rounded-md',
 	};
-</script>
 
-<script>
 	export let variant = 'default';
 	export let size = 'md';
 	export let className = '';

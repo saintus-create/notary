@@ -1,5 +1,5 @@
 <script>
-	export let title = '';
+	export const title = ''; // For external reference
 	export let className = '';
 </script>
 

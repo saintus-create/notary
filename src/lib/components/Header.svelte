@@ -27,7 +27,7 @@
 			</div>
 			
 			<!-- Desktop Navigation -->
-			<nav class="hidden md:flex items-center space-x-lg" role="navigation" aria-label="Main navigation">
+			<nav class="hidden md:flex items-center space-x-lg" aria-label="Main navigation">
 				{#each navItems as item}
 					<a 
 						href={item.href} 
