@@ -1,5 +1,4 @@
 <script>
-	import { Slot } from '@radix-ui/react-slot';
 	import { cn } from '$lib/utils.js';
 
 	const buttonVariants = {
@@ -19,32 +18,57 @@
 </script>
 
 <script>
-	export let asChild = false;
 	export let variant = 'default';
 	export let size = 'md';
 	export let className = '';
-	
-	let Comp = 'button';
+	export let href = null;
+	export let disabled = false;
+	export let type = 'button';
 </script>
 
-<svelte:element 
-	this={asChild ? Slot : 'button'}
-	class={cn(
-		'inline-flex items-center justify-center font-semibold transition-all duration-200 ease-out',
-		'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
-		'disabled:pointer-events-none disabled:opacity-50',
-		// Following checklist specifications
-		'min-w-[64px]', // Accessibility minimum from checklist
-		'tracking-normal', // Letter spacing from checklist
-		'leading-relaxed', // Line height from checklist
-		// Apply variants and sizes
-		buttonVariants[variant],
-		buttonSizes[size],
-		// Custom hover effects (optional)
-		variant === 'default' && 'hover:scale-105 active:scale-95',
-		className
-	)}
-	{...$$restProps}
->
-	<slot />
-</svelte:element>
+{#if href}
+	<a 
+		{href}
+		class={cn(
+			'inline-flex items-center justify-center font-semibold transition-all duration-200 ease-out',
+			'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+			'disabled:pointer-events-none disabled:opacity-50',
+			// Following checklist specifications
+			'min-w-[64px]', // Accessibility minimum from checklist
+			'tracking-normal', // Letter spacing from checklist
+			'leading-relaxed', // Line height from checklist
+			// Apply variants and sizes
+			buttonVariants[variant],
+			buttonSizes[size],
+			// Custom hover effects (optional)
+			variant === 'default' && 'hover:scale-105 active:scale-95',
+			className
+		)}
+		{...$$restProps}
+	>
+		<slot />
+	</a>
+{:else}
+	<button 
+		{type}
+		{disabled}
+		class={cn(
+			'inline-flex items-center justify-center font-semibold transition-all duration-200 ease-out',
+			'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+			'disabled:pointer-events-none disabled:opacity-50',
+			// Following checklist specifications
+			'min-w-[64px]', // Accessibility minimum from checklist
+			'tracking-normal', // Letter spacing from checklist
+			'leading-relaxed', // Line height from checklist
+			// Apply variants and sizes
+			buttonVariants[variant],
+			buttonSizes[size],
+			// Custom hover effects (optional)
+			variant === 'default' && 'hover:scale-105 active:scale-95',
+			className
+		)}
+		{...$$restProps}
+	>
+		<slot />
+	</button>
+{/if}
